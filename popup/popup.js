@@ -47,7 +47,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     // Update UI based on platform
     if (platform === 'claude') {
-      platformStatusElement.textContent = 'Claude detected ✓';
+      platformStatusElement.textContent = 'Claude detected ';
       platformStatusElement.classList.add('supported');
       exportBtn.disabled = false;
     } else if (platform === 'chatgpt' || platform === 'gemini') {
