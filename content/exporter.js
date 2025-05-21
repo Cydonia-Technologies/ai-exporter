@@ -13,22 +13,24 @@
   const platform = platformUtils.detectPlatform();
   
   console.log(`AI-Exporter: Detected platform: ${platform}`);
-  
-  // Execute the appropriate exporter based on platform
-  if (platform === 'claude') {
-    // Import Claude exporter dynamically
-    const claudeExporter = window.aiExporter.exporters.claude;
-    return claudeExporter.exportConversation(format);
-  } else if (platform === 'chatgpt') {
-    // ChatGPT support placeholder
-    alert('AI-Exporter: ChatGPT support coming soon!');
-    return false;
-  } else if (platform === 'gemini') {
-    // Gemini support placeholder
-    alert('AI-Exporter: Gemini support coming soon!');
-    return false;
-  } else {
-    alert(`AI-Exporter: ${platform} is not yet supported. Coming soon!`);
-    return false;
-  }
+ window.aiExporter.performExport = function(format) {
+       console.log(`AI-Exporter: User requested export in ${format} format`); 
+     // Execute the appropriate exporter based on platform
+     if (platform === 'claude') {
+       // Import Claude exporter dynamically
+       const claudeExporter = window.aiExporter.exporters.claude;
+       return claudeExporter.exportConversation(format);
+     } else if (platform === 'chatgpt') {
+       // ChatGPT support placeholder
+       alert('AI-Exporter: ChatGPT support coming soon!');
+       return false;
+     } else if (platform === 'gemini') {
+       // Gemini support placeholder
+       alert('AI-Exporter: Gemini support coming soon!');
+       return false;
+     } else {
+       alert(`AI-Exporter: ${platform} is not yet supported. Coming soon!`);
+       return false;
+     }
+ }
 })();

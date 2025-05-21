@@ -1,5 +1,5 @@
 // Browser API compatibility
-const browserAPI = typeof browser !== 'undefined' ? browser : chrome;
+const browserAPI = typeof browser !== 'undefined' ? browser : browser;
 
 document.addEventListener('DOMContentLoaded', async () => {
   const exportBtn = document.getElementById('exportBtn');
@@ -34,45 +34,45 @@ document.addEventListener('DOMContentLoaded', async () => {
     exportBtn.disabled = true;
   }
   
-  // Export button click handler
-  exportBtn.addEventListener('click', async () => {
-    if (platform === 'unknown' || exportBtn.disabled) {
-      statusElement.textContent = 'This platform is not yet supported';
-      return;
-    }
-    
-    statusElement.textContent = 'Exporting...';
-    
-    try {
-      // Pass the selected format to the content script
-      const format = formatSelect.value;
-      
-      // Execute content script to perform the export
-      const result = await browserAPI.tabs.executeScript(tab.id, {
-        code: `
-          // Inject the format parameter
-          window.aiExporterFormat = "${format}";
-          // The actual script will be injected after this
-        `
-      });
-      
-      // Execute the main exporter by calling a function that should already be injected
-      const exportResult = await browserAPI.tabs.executeScript(tab.id, {
-      code: 'window.aiExporter ? window.aiExporter.exporters.claude.exportConversation("' + format + '") : false;'
-      });
-      
-      if (exportResult && exportResult[0]) {
-        statusElement.textContent = 'Export successful!';
-      } else {
-        statusElement.textContent = 'Export failed. Try again?';
-      }
-    } catch (error) {
-      console.error('Error executing content script:', error);
-      statusElement.textContent = 'Error: ' + error.message;
-    }
-  });
+// Export button click handler
+exportBtn.addEventListener('click', async () => {
+  if (platform === 'unknown' || exportBtn.disabled) {
+    statusElement.textContent = 'This platform is not yet supported';
+    return;
+  }
   
-  // Update contribute and support links
-  document.getElementById('contributeBtn').href = "https://github.com/yourusername/ai-exporter";
-  document.getElementById('supportBtn').href = "https://buymeacoffee.com/yourusername";
+  statusElement.textContent = 'Exporting...';
+  
+  try {
+    // Get the selected format
+    const format = formatSelect.value;
+    
+    // Get the current tab
+    const [tab] = await browser.tabs.query({ active: true, currentWindow: true });
+    
+    // Execute the script using browser.scripting (Manifest V3 approach)
+    const results = await browser.scripting.executeScript({
+      target: { tabId: tab.id },
+      func: (format) => {
+        // This function runs in the context of the web page
+        if (window.aiExporter && 
+            window.aiExporter.exporters && 
+            window.aiExporter.exporters.claude) {
+          return window.aiExporter.exporters.claude.exportConversation(format);
+        }
+        return false;
+      },
+      args: [format] // Pass the format as an argument
+    });
+    
+    // Check the result
+    if (results && results[0] && results[0].result) {
+      statusElement.textContent = 'Export successful!';
+    } else {
+      statusElement.textContent = 'Export failed. Try again?';
+    }
+  } catch (error) {
+    console.error('Error:', error);
+    statusElement.textContent = 'Error: ' + error.message;
+  }
 });

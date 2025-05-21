@@ -16,7 +16,7 @@
       "128": "assets/icons/icon-128.png"
     }
   },
-  "permissions": ["activeTab", "downloads"],
+  "permissions": ["activeTab", "scripting", "downloads"],
   "content_scripts": [
     {
       "matches": [
