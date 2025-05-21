@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>AI-Exporter</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <img src="../assets/icons/icon-48.png" alt="AI-Exporter Logo" class="logo">
+      <h1>AI-Exporter</h1>
+    </header>
+
+    <div class="platform-info">
+      <div id="platform-status">Detecting AI platform...</div>
+    </div>
+
+    <div id="export-options">
+      <button id="exportBtn" class="btn primary">Export Conversation</button>
+      <div class="format-selector">
+        <label for="format">Format:</label>
+        <select id="format">
+          <option value="markdown" selected>Markdown</option>
+          <option value="html">HTML</option>
+          <option value="text">Plain Text</option>
+        </select>
+      </div>
+    </div>
+
+    <div id="status" class="status"></div>
+
+    <div class="separator"></div>
+
+    <div class="footer-buttons">
+      <a href="https://github.com/Cydonia-Technologies/ai-exporter" target="_blank" id="contributeBtn" class="btn secondary">
+        <span class="icon">🛠️</span> Contribute
+      </a>
+      <a href="https://buymeacoffee.com/alpkaralar" target="_blank" id="supportBtn" class="btn secondary">
+        <span class="icon">☕</span> Support
+      </a>
+    </div>
+
+    <div class="version">Version 1.0.0</div>
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html>
