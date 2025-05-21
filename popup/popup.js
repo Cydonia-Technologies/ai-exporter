@@ -1,78 +1,60 @@
-// Browser API compatibility
-const browserAPI = typeof browser !== 'undefined' ? browser : browser;
-
 document.addEventListener('DOMContentLoaded', async () => {
-  const exportBtn = document.getElementById('exportBtn');
-  const formatSelect = document.getElementById('format');
-  const statusElement = document.getElementById('status');
+  console.log("1. Popup loaded");
+  
+  // Get elements
   const platformStatusElement = document.getElementById('platform-status');
   
-  // Get the current tab to check what platform we're on
-  const [tab] = await browserAPI.tabs.query({ active: true, currentWindow: true });
-  const url = new URL(tab.url);
-  
-  // Detect which AI platform we're on
-  let platform = 'unknown';
-  if (url.hostname.includes('claude.ai') || url.hostname.includes('anthropic.com')) {
-    platform = 'claude';
-    platformStatusElement.textContent = 'Claude detected ✓';
-    platformStatusElement.classList.add('supported');
-    exportBtn.disabled = false;
-  } else if (url.hostname.includes('chat.openai.com')) {
-    platform = 'chatgpt';
-    platformStatusElement.textContent = 'ChatGPT support coming soon';
-    platformStatusElement.classList.add('unsupported');
-    exportBtn.disabled = true;
-  } else if (url.hostname.includes('gemini.google.com')) {
-    platform = 'gemini';
-    platformStatusElement.textContent = 'Gemini support coming soon';
-    platformStatusElement.classList.add('unsupported');
-    exportBtn.disabled = true;
-  } else {
-    platformStatusElement.textContent = 'No supported AI platform detected';
-    platformStatusElement.classList.add('unsupported');
-    exportBtn.disabled = true;
-  }
-  
-// Export button click handler
-exportBtn.addEventListener('click', async () => {
-  if (platform === 'unknown' || exportBtn.disabled) {
-    statusElement.textContent = 'This platform is not yet supported';
+  if (!platformStatusElement) {
+    console.error("2a. Platform status element not found");
     return;
   }
   
-  statusElement.textContent = 'Exporting...';
+  console.log("2. Found platform status element");
+  platformStatusElement.textContent = 'Starting platform detection...';
   
   try {
-    // Get the selected format
-    const format = formatSelect.value;
+    console.log("3. Starting initialization");
+    platformStatusElement.textContent = 'Querying active tab...';
     
-    // Get the current tab
-    const [tab] = await browser.tabs.query({ active: true, currentWindow: true });
+    // Using async/await style which is more reliable in Firefox
+    const tabs = await browser.tabs.query({ active: true, currentWindow: true });
+    console.log(`4. Tab query completed, found ${tabs.length} tabs`);
     
-    // Execute the script using browser.scripting (Manifest V3 approach)
-    const results = await browser.scripting.executeScript({
-      target: { tabId: tab.id },
-      func: (format) => {
-        // This function runs in the context of the web page
-        if (window.aiExporter && 
-            window.aiExporter.exporters && 
-            window.aiExporter.exporters.claude) {
-          return window.aiExporter.exporters.claude.exportConversation(format);
-        }
-        return false;
-      },
-      args: [format] // Pass the format as an argument
-    });
+    if (tabs.length === 0) {
+      platformStatusElement.textContent = 'Error: Could not find current tab';
+      platformStatusElement.classList.add('unsupported');
+      return;
+    }
     
-    // Check the result
-    if (results && results[0] && results[0].result) {
-      statusElement.textContent = 'Export successful!';
+    const tab = tabs[0];
+    console.log(`5. Current tab URL: ${tab.url}`);
+    
+    // Simple platform detection
+    let platform = 'unknown';
+    if (tab.url.includes('claude.ai') || tab.url.includes('anthropic.com')) {
+      platform = 'claude';
+    } else if (tab.url.includes('chat.openai.com')) {
+      platform = 'chatgpt';
+    } else if (tab.url.includes('gemini.google.com')) {
+      platform = 'gemini';
+    }
+    
+    console.log(`6. Detected platform: ${platform}`);
+    
+    // Update UI based on platform
+    if (platform === 'claude') {
+      platformStatusElement.textContent = 'Claude detected ✓';
+      platformStatusElement.classList.add('supported');
+    } else if (platform === 'chatgpt' || platform === 'gemini') {
+      platformStatusElement.textContent = `${platform} support coming soon`;
+      platformStatusElement.classList.add('unsupported');
     } else {
-      statusElement.textContent = 'Export failed. Try again?';
+      platformStatusElement.textContent = 'No supported AI platform detected';
+      platformStatusElement.classList.add('unsupported');
     }
   } catch (error) {
-    console.error('Error:', error);
-    statusElement.textContent = 'Error: ' + error.message;
+    console.error("Error during initialization:", error);
+    platformStatusElement.textContent = `Error: ${error.message}`;
+    platformStatusElement.classList.add('unsupported');
   }
 });
