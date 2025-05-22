@@ -1,8 +1,15 @@
 {
   "manifest_version": 3,
   "name": "AI-Exporter",
-  "version": "1.0.0",
+  "version": "1.0.1",
+  "browser_specific_settings":{
+    "gecko": {
+      "id": "ai-exporter@cydonia.org"
+    }
+  },
   "description": "Export AI conversations from Claude, ChatGPT, and other platforms with preserved formatting",
+  "homepage_url": "https://github.com/Cydonia-Technologies/ai-exporter/",
+  "author": "Alp Efe Karalar, Cydonia Tech",
   "icons": {
     "16": "assets/icons/icon-16.png",
     "48": "assets/icons/icon-48.png",
