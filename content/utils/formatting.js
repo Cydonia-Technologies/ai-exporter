@@ -1,10 +1,284 @@
-// Formatting utilities for AI conversation exports
+// Enhanced formatting utilities for AI conversation exports
 window.aiExporter = window.aiExporter || {};
 window.aiExporter.utils = window.aiExporter.utils || {};
 
 window.aiExporter.utils.formatting = (function() {
   /**
-   * Generate Markdown format from message elements
+   * Convert HTML element to markdown with proper formatting
+   * @param {Element} element - DOM element to convert
+   * @return {string} Markdown formatted text
+   */
+  function htmlToMarkdown(element) {
+    // Clone the element to avoid modifying the original
+    const clone = element.cloneNode(true);
+    
+    // Process specific HTML elements and convert to markdown
+    processElement(clone);
+    
+    // Get the final text content
+    return clone.textContent || clone.innerText || '';
+  }
+  
+  /**
+   * Recursively process DOM elements and convert to markdown
+   * @param {Element} element - Element to process
+   */
+  function processElement(element) {
+    // Handle different types of elements
+    const tagName = element.tagName?.toLowerCase();
+    
+    switch (tagName) {
+      case 'h1':
+      case 'h2':
+      case 'h3':
+      case 'h4':
+      case 'h5':
+      case 'h6':
+        convertHeading(element);
+        break;
+      case 'strong':
+      case 'b':
+        convertBold(element);
+        break;
+      case 'em':
+      case 'i':
+        convertItalic(element);
+        break;
+      case 'code':
+        convertInlineCode(element);
+        break;
+      case 'pre':
+        convertCodeBlock(element);
+        break;
+      case 'ul':
+        convertUnorderedList(element);
+        break;
+      case 'ol':
+        convertOrderedList(element);
+        break;
+      case 'li':
+        // List items are handled by their parent ul/ol
+        break;
+      case 'blockquote':
+        convertBlockquote(element);
+        break;
+      case 'a':
+        convertLink(element);
+        break;
+      case 'table':
+        convertTable(element);
+        break;
+      case 'br':
+        element.textContent = '\n';
+        break;
+      case 'hr':
+        element.textContent = '\n---\n';
+        break;
+      default:
+        // For other elements, just process their children
+        processChildren(element);
+        break;
+    }
+  }
+  
+  /**
+   * Process all child elements
+   * @param {Element} element - Parent element
+   */
+  function processChildren(element) {
+    const children = Array.from(element.children);
+    children.forEach(child => processElement(child));
+  }
+  
+  /**
+   * Convert heading elements to markdown
+   * @param {Element} element - Heading element
+   */
+  function convertHeading(element) {
+    const level = parseInt(element.tagName.charAt(1));
+    const hashes = '#'.repeat(level);
+    const text = element.textContent || element.innerText || '';
+    element.textContent = `${hashes} ${text.trim()}`;
+  }
+  
+  /**
+   * Convert bold elements to markdown
+   * @param {Element} element - Bold element
+   */
+  function convertBold(element) {
+    processChildren(element);
+    const text = element.textContent || element.innerText || '';
+    element.textContent = `**${text.trim()}**`;
+  }
+  
+  /**
+   * Convert italic elements to markdown
+   * @param {Element} element - Italic element
+   */
+  function convertItalic(element) {
+    processChildren(element);
+    const text = element.textContent || element.innerText || '';
+    element.textContent = `*${text.trim()}*`;
+  }
+  
+  /**
+   * Convert inline code elements to markdown
+   * @param {Element} element - Code element
+   */
+  function convertInlineCode(element) {
+    // Don't process if this is inside a pre element (code block)
+    if (element.closest('pre')) {
+      return;
+    }
+    
+    const text = element.textContent || element.innerText || '';
+    element.textContent = `\`${text}\``;
+  }
+  
+  /**
+   * Convert code block elements to markdown
+   * @param {Element} element - Pre element
+   */
+  function convertCodeBlock(element) {
+    const codeElement = element.querySelector('code');
+    const text = (codeElement || element).textContent || (codeElement || element).innerText || '';
+    
+    // Try to detect language from class names
+    let language = '';
+    const classNames = (codeElement || element).className;
+    if (classNames) {
+      const langMatch = classNames.match(/(?:language-|lang-)([a-zA-Z0-9]+)/);
+      if (langMatch) {
+        language = langMatch[1];
+      }
+    }
+    
+    element.textContent = `\`\`\`${language}\n${text}\n\`\`\``;
+  }
+  
+  /**
+   * Convert unordered list to markdown
+   * @param {Element} element - UL element
+   */
+  function convertUnorderedList(element) {
+    const items = Array.from(element.querySelectorAll('li'));
+    let result = '';
+    
+    items.forEach((item, index) => {
+      // Process children of the list item first
+      processChildren(item);
+      
+      const text = item.textContent || item.innerText || '';
+      const trimmedText = text.trim();
+      
+      if (trimmedText) {
+        // Check if this looks like a checkbox/todo item
+        const isCheckbox = trimmedText.match(/^[\[\(][\s\u00A0]*[x✓\u2713\u2714]?[\s\u00A0]*[\]\)]/i);
+        
+        if (isCheckbox) {
+          // Convert to markdown checkbox format
+          const isChecked = /[x✓\u2713\u2714]/i.test(isCheckbox[0]);
+          const cleanText = trimmedText.replace(/^[\[\(][\s\u00A0]*[x✓\u2713\u2714]?[\s\u00A0]*[\]\)][\s\u00A0]*/, '').trim();
+          result += `- [${isChecked ? 'x' : ' '}] ${cleanText}`;
+        } else {
+          result += `- ${trimmedText}`;
+        }
+        
+        if (index < items.length - 1) {
+          result += '\n';
+        }
+      }
+    });
+    
+    element.textContent = result;
+  }
+  
+  /**
+   * Convert ordered list to markdown
+   * @param {Element} element - OL element
+   */
+  function convertOrderedList(element) {
+    const items = Array.from(element.querySelectorAll('li'));
+    let result = '';
+    
+    items.forEach((item, index) => {
+      // Process children of the list item first
+      processChildren(item);
+      
+      const text = item.textContent || item.innerText || '';
+      const trimmedText = text.trim();
+      
+      if (trimmedText) {
+        result += `${index + 1}. ${trimmedText}`;
+        if (index < items.length - 1) {
+          result += '\n';
+        }
+      }
+    });
+    
+    element.textContent = result;
+  }
+  
+  /**
+   * Convert blockquote to markdown
+   * @param {Element} element - Blockquote element
+   */
+  function convertBlockquote(element) {
+    processChildren(element);
+    const text = element.textContent || element.innerText || '';
+    const lines = text.split('\n');
+    const quotedLines = lines.map(line => `> ${line.trim()}`).join('\n');
+    element.textContent = quotedLines;
+  }
+  
+  /**
+   * Convert link to markdown
+   * @param {Element} element - Anchor element
+   */
+  function convertLink(element) {
+    processChildren(element);
+    const text = element.textContent || element.innerText || '';
+    const href = element.getAttribute('href') || '';
+    
+    if (href && text.trim()) {
+      element.textContent = `[${text.trim()}](${href})`;
+    }
+  }
+  
+  /**
+   * Convert table to markdown
+   * @param {Element} element - Table element
+   */
+  function convertTable(element) {
+    const rows = Array.from(element.querySelectorAll('tr'));
+    let result = '';
+    
+    rows.forEach((row, rowIndex) => {
+      const cells = Array.from(row.querySelectorAll('td, th'));
+      const cellTexts = cells.map(cell => {
+        processChildren(cell);
+        return (cell.textContent || cell.innerText || '').trim();
+      });
+      
+      if (cellTexts.length > 0) {
+        result += '| ' + cellTexts.join(' | ') + ' |';
+        
+        // Add header separator after first row
+        if (rowIndex === 0) {
+          result += '\n| ' + cells.map(() => '---').join(' | ') + ' |';
+        }
+        
+        if (rowIndex < rows.length - 1) {
+          result += '\n';
+        }
+      }
+    });
+    
+    element.textContent = result;
+  }
+  
+  /**
+   * Enhanced Generate Markdown format from message elements
    * @param {Array} allMessages - All message elements
    * @param {Array} userMessages - User message elements
    * @return {string} Markdown formatted text
@@ -12,52 +286,30 @@ window.aiExporter.utils.formatting = (function() {
   function generateMarkdown(allMessages, userMessages) {
     let output = '# AI Conversation Export\n\n';
     
-    allMessages.forEach(msg => {
+    allMessages.forEach((msg, index) => {
       // Determine if user message
       const isUserMessage = userMessages.includes(msg) || 
                            msg.getAttribute('data-testid') === 'user-message' || 
                            (msg.getAttribute('class') || '').includes('user');
       
-      // Use bold for speaker labels instead of headers to avoid conflicts
+      // Use bold for speaker labels
       const sender = isUserMessage ? '**Human:**' : '**Assistant:**';
       
-      // Get HTML content to preserve formatting better
-      let content = '';
-      
-      // Try to get the actual DOM content to preserve formatting
-      // Clone the node to avoid modifying the actual page
+      // Clone the message to avoid modifying the original
       const msgClone = msg.cloneNode(true);
       
-      // Find code blocks and ensure they're properly formatted
-      const codeBlocks = msgClone.querySelectorAll('pre, code');
-      codeBlocks.forEach(codeBlock => {
-        // Preserve code block formatting
-        // Replace the code block with properly formatted markdown code block
-        const language = codeBlock.className.replace('language-', '').replace(/^lang-/, '').trim() || '';
-        const codeContent = codeBlock.innerText;
-        
-        // Create a properly formatted markdown code block
-        const markdownCodeBlock = '```' + language + '\n' + codeContent + '\n```';
-        
-        // If it's a <pre><code> structure, replace the pre element
-        if (codeBlock.tagName.toLowerCase() === 'code' && codeBlock.parentNode.tagName.toLowerCase() === 'pre') {
-          codeBlock.parentNode.outerHTML = markdownCodeBlock;
-        } else {
-          // Otherwise just replace the code element itself
-          codeBlock.outerHTML = markdownCodeBlock;
-        }
-      });
+      // Process the cloned message to convert HTML to markdown
+      processElement(msgClone);
       
-      // Get the text content which now has proper markdown code blocks
-      content = msgClone.innerText.trim();
+      // Get the converted content
+      let content = msgClone.textContent || msgClone.innerText || '';
+      content = content.trim();
       
-      // Fix heading levels to avoid conflict with speaker labels
-      content = content.replace(/^(#{1,6})\s+(.+)$/gm, (match, hashes, title) => {
-        // Keep the same heading level but ensure it's properly formatted
-        return hashes + ' ' + title;
-      });
+      // Clean up any extra whitespace
+      content = content.replace(/\n\s*\n\s*\n/g, '\n\n'); // Max 2 consecutive newlines
+      content = content.replace(/^\s+|\s+$/g, ''); // Trim start and end
       
-      // Add to output with a blank line between speaker and content
+      // Add to output
       output += `${sender}\n\n${content}\n\n---\n\n`;
     });
     
@@ -65,7 +317,7 @@ window.aiExporter.utils.formatting = (function() {
   }
   
   /**
-   * Generate Markdown from grouped elements
+   * Enhanced Generate Markdown from grouped elements
    * @param {Array} messages - Groups of message elements
    * @return {string} Markdown formatted text
    */
@@ -81,36 +333,32 @@ window.aiExporter.utils.formatting = (function() {
         (firstElement.getAttribute('class') || '').includes('user') ||
         index % 2 === 0;
       
-      // Use bold for speaker labels instead of headers
+      // Use bold for speaker labels
       const sender = isUserMessage ? '**Human:**' : '**Assistant:**';
       
-      // Process each element in the group to preserve formatting
+      // Process each element in the group
       let content = '';
       
       group.forEach(el => {
         // Clone the element to avoid modifying the page
         const elClone = el.cloneNode(true);
         
-        // Handle code blocks
-        const codeBlocks = elClone.querySelectorAll('pre, code');
-        codeBlocks.forEach(codeBlock => {
-          const language = codeBlock.className.replace('language-', '').replace(/^lang-/, '').trim() || '';
-          const codeContent = codeBlock.innerText;
-          const markdownCodeBlock = '```' + language + '\n' + codeContent + '\n```';
-          
-          if (codeBlock.tagName.toLowerCase() === 'code' && codeBlock.parentNode.tagName.toLowerCase() === 'pre') {
-            codeBlock.parentNode.outerHTML = markdownCodeBlock;
-          } else {
-            codeBlock.outerHTML = markdownCodeBlock;
-          }
-        });
+        // Process to convert HTML to markdown
+        processElement(elClone);
         
         // Append the element's content
-        if (content) content += '\n\n';
-        content += elClone.innerText.trim();
+        const elementContent = (elClone.textContent || elClone.innerText || '').trim();
+        if (elementContent) {
+          if (content) content += '\n\n';
+          content += elementContent;
+        }
       });
       
-      // Add to output with a separator
+      // Clean up content
+      content = content.replace(/\n\s*\n\s*\n/g, '\n\n');
+      content = content.trim();
+      
+      // Add to output
       output += `${sender}\n\n${content}\n\n---\n\n`;
     });
     
@@ -169,6 +417,40 @@ window.aiExporter.utils.formatting = (function() {
     }
     code {
       font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
+      background-color: #f5f5f5;
+      padding: 2px 4px;
+      border-radius: 3px;
+    }
+    pre code {
+      background-color: transparent;
+      padding: 0;
+    }
+    blockquote {
+      border-left: 4px solid #ddd;
+      margin: 0;
+      padding-left: 16px;
+      color: #666;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 16px 0;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px 12px;
+      text-align: left;
+    }
+    th {
+      background-color: #f5f5f5;
+      font-weight: bold;
+    }
+    ul, ol {
+      margin: 16px 0;
+      padding-left: 24px;
+    }
+    li {
+      margin: 4px 0;
     }
   </style>
 </head>
@@ -185,27 +467,11 @@ window.aiExporter.utils.formatting = (function() {
       const senderClass = isUserMessage ? 'human' : 'assistant';
       const senderText = isUserMessage ? 'Human' : 'Assistant';
       
-      // Clone the node to preserve formatting
-      const msgClone = msg.cloneNode(true);
+      // Get HTML content while preserving formatting
+      let content = msg.innerHTML;
       
-      // Convert code blocks to HTML
-      const codeBlocks = msgClone.querySelectorAll('pre, code');
-      codeBlocks.forEach(codeBlock => {
-        const language = codeBlock.className.replace('language-', '').replace(/^lang-/, '').trim() || '';
-        const codeContent = codeBlock.innerText;
-        
-        // Create HTML code block
-        const htmlCodeBlock = `<pre><code${language ? ` class="language-${language}"` : ''}>${escapeHtml(codeContent)}</code></pre>`;
-        
-        if (codeBlock.tagName.toLowerCase() === 'code' && codeBlock.parentNode.tagName.toLowerCase() === 'pre') {
-          codeBlock.parentNode.outerHTML = htmlCodeBlock;
-        } else {
-          codeBlock.outerHTML = htmlCodeBlock;
-        }
-      });
-      
-      // Get content
-      let content = msgClone.innerText.trim();
+      // Clean up the HTML content
+      content = cleanHtmlContent(content);
       
       // Add message to output
       output += `  <div class="message">
@@ -272,6 +538,40 @@ window.aiExporter.utils.formatting = (function() {
     }
     code {
       font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
+      background-color: #f5f5f5;
+      padding: 2px 4px;
+      border-radius: 3px;
+    }
+    pre code {
+      background-color: transparent;
+      padding: 0;
+    }
+    blockquote {
+      border-left: 4px solid #ddd;
+      margin: 0;
+      padding-left: 16px;
+      color: #666;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 16px 0;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px 12px;
+      text-align: left;
+    }
+    th {
+      background-color: #f5f5f5;
+      font-weight: bold;
+    }
+    ul, ol {
+      margin: 16px 0;
+      padding-left: 24px;
+    }
+    li {
+      margin: 4px 0;
     }
   </style>
 </head>
@@ -294,28 +594,13 @@ window.aiExporter.utils.formatting = (function() {
       let content = '';
       
       group.forEach(el => {
-        // Clone the element
-        const elClone = el.cloneNode(true);
-        
-        // Handle code blocks
-        const codeBlocks = elClone.querySelectorAll('pre, code');
-        codeBlocks.forEach(codeBlock => {
-          const language = codeBlock.className.replace('language-', '').replace(/^lang-/, '').trim() || '';
-          const codeContent = codeBlock.innerText;
-          
-          // Create HTML code block
-          const htmlCodeBlock = `<pre><code${language ? ` class="language-${language}"` : ''}>${escapeHtml(codeContent)}</code></pre>`;
-          
-          if (codeBlock.tagName.toLowerCase() === 'code' && codeBlock.parentNode.tagName.toLowerCase() === 'pre') {
-            codeBlock.parentNode.outerHTML = htmlCodeBlock;
-          } else {
-            codeBlock.outerHTML = htmlCodeBlock;
-          }
-        });
+        // Get HTML content
+        let elementContent = el.innerHTML;
+        elementContent = cleanHtmlContent(elementContent);
         
         // Append content
         if (content) content += '<br><br>';
-        content += elClone.innerText.trim();
+        content += elementContent;
       });
       
       // Add message to output
@@ -330,6 +615,29 @@ window.aiExporter.utils.formatting = (function() {
 </html>`;
     
     return output;
+  }
+  
+  /**
+   * Clean HTML content for export
+   * @param {string} html - Raw HTML content
+   * @return {string} Cleaned HTML content
+   */
+  function cleanHtmlContent(html) {
+    // Remove unwanted attributes and clean up HTML
+    let cleaned = html;
+    
+    // Remove common unwanted attributes
+    cleaned = cleaned.replace(/\s*(?:class|id|style|data-[^=]*|aria-[^=]*)="[^"]*"/gi, '');
+    cleaned = cleaned.replace(/\s*(?:class|id|style|data-[^=]*|aria-[^=]*)='[^']*'/gi, '');
+    
+    // Remove empty elements
+    cleaned = cleaned.replace(/<(\w+)[^>]*>\s*<\/\1>/g, '');
+    
+    // Clean up whitespace
+    cleaned = cleaned.replace(/\s+/g, ' ');
+    cleaned = cleaned.trim();
+    
+    return cleaned;
   }
   
   /**
@@ -432,6 +740,7 @@ window.aiExporter.utils.formatting = (function() {
     // Clean up
     setTimeout(() => URL.revokeObjectURL(url), 100);
   }
+  
   window.aiExporter.registerModule('formatting'); 
   
   // Export module public methods
@@ -443,6 +752,7 @@ window.aiExporter.utils.formatting = (function() {
     generatePlainText: generatePlainText,
     generatePlainTextFromGroups: generatePlainTextFromGroups,
     escapeHtml: escapeHtml,
-    downloadFile: downloadFile
+    downloadFile: downloadFile,
+    htmlToMarkdown: htmlToMarkdown
   };
 })();
