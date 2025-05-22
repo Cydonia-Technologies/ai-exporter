@@ -2,7 +2,7 @@
 
 A browser extension that lets you export AI conversations from platforms like Claude, ChatGPT, and Gemini with preserved formatting.
 
-Check out an example output here: [a relative link](EXAMPLE.md)
+Check out an example output here: [EXAMPLE](EXAMPLE.md)
 
 ## Features
 
@@ -19,7 +19,7 @@ Check out an example output here: [a relative link](EXAMPLE.md)
 
 ### Chrome / Edge / Brave
 
-- To be Updated
+- No Chromium based browser support yet :(
 
 ### Manual Installation
 
@@ -30,10 +30,7 @@ Check out an example output here: [a relative link](EXAMPLE.md)
    - Click "Load Temporary Add-on"
    - Select the `manifest.json` file
 3. For Chrome/Edge/Brave:
-   - Go to your browser's extension page
-   - Enable Developer Mode
-   - Click "Load unpacked"
-   - Select the extension folder
+   - No Chromium based browser support yet :(
 
 ## Usage
 
