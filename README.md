@@ -61,13 +61,24 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 ## TODO
 - [ ] Improve the styling of the output MD file (sub-elements are in order of importance)
    - [x] Differentiate between Human and Assistant
-   - [ ] Headers and different levels of them
-   - [ ] Bullets
-   - [ ] Numbered lists
-   - [ ] Bolds/Italics
-   - [ ] Code Snippets
-   - [ ] Checkboxes
+   - [x] Headers and different levels of them
+   - [x] Bullets
+   - [x] Numbered lists
+   - [x] Bolds/Italics
+   - [x] Code Snippets
+   - [x] Checkboxes
+   - [x] Links
    - [ ] Tables
+   - [ ] Artifacts created by AI Agent
+      - [ ] Make it an option for the user
+         - [ ] To download the artifact separately (Default)
+         - [ ] To not download the file and just refer to it
+      - [ ] Include the name of the artifact AND/OR a link to it in the MD
+   - [ ] Files attached by Human
+      - [ ] Make it an option for the user
+         - [ ] To not download the file and just refer to it (Default behavior) 
+         - [ ] To download the file separately 
+      - [ ] Include the name of the file AND/OR a link to it in the MD 
    - [ ] Any other advanced/semi-advanced MD sylings
 - [ ] Implement LLM Clients
    - [x] Claude (Priority)
