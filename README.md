@@ -58,6 +58,26 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
+## TODO
+- [ ] Improve the styling of the output MD file (sub-elements are in order of importance)
+   - [x] Differentiate between Human and Assistant
+   - [ ] Headers and different levels of them
+   - [ ] Bullets
+   - [ ] Numbered lists
+   - [ ] Bolds/Italics
+   - [ ] Code Snippets
+   - [ ] Checkboxes
+   - [ ] Tables
+   - [ ] Any other advanced/semi-advanced MD sylings
+- [ ] Implement LLM Clients
+   - [x] Claude (Priority)
+   - [ ] ChatGPT (Priority)
+   - [ ] Gemini
+   - [ ] Deepseek
+   - [ ] Other popular LLM clients (optional)
+- [ ] Implement Chrome Compatibility
+- [ ] Implement PDF output support 
+
 ## Support the Project
 
 If you find this extension useful, consider supporting its development:
