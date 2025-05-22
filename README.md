@@ -2,9 +2,7 @@
 
 A browser extension that lets you export AI conversations from platforms like Claude, ChatGPT, and Gemini with preserved formatting.
 
-<p align="center">
-  <img src="assets/screenshots/screenshot-main.png" alt="AI-Exporter Screenshot" width="400">
-</p>
+Check out an example output here: [a relative link](EXAMPLE.md)
 
 ## Features
 
