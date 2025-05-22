@@ -3,13 +3,15 @@ document.addEventListener('DOMContentLoaded', async () => {
   
   // Get all UI elements
   const platformStatusElement = document.getElementById('platform-status');
+  const platformIconElement = document.getElementById('platform-icon');
   const exportBtn = document.getElementById('exportBtn');
   const formatSelect = document.getElementById('format');
   const statusElement = document.getElementById('status');
   
-  if (!platformStatusElement || !exportBtn || !formatSelect || !statusElement) {
+  if (!platformStatusElement || !platformIconElement || !exportBtn || !formatSelect || !statusElement) {
     console.error("Some UI elements not found:", {
       platformStatusElement: !!platformStatusElement,
+      platformIconElement: !!platformIconElement,
       exportBtn: !!exportBtn,
       formatSelect: !!formatSelect,
       statusElement: !!statusElement
@@ -28,7 +30,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       platformStatusElement.textContent = 'Error: Could not find current tab';
       platformStatusElement.classList.add('unsupported');
       return;
-    }
+    id="platform icon" }
     
     const tab = tabs[0];
     console.log("Current tab URL:", tab.url);
@@ -48,6 +50,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Update UI based on platform
     if (platform === 'claude') {
       platformStatusElement.textContent = 'Claude detected ';
+      platformIconElement.src="../assets/icons/claude.svg";
       platformStatusElement.classList.add('supported');
       exportBtn.disabled = false;
     } else if (platform === 'chatgpt' || platform === 'gemini') {
